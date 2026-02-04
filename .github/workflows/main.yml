@@ -1,0 +1,18 @@
+name: Windows-RDP-VPS
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Install Tailscale
+        run: |
+          Invoke-WebRequest -Uri "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe" -OutFile "tailscale.exe"
+          Start-Process -FilePath "tailscale.exe" -ArgumentList "/quiet" -Wait
+          & "C:\Program Files\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=windows-vps
+      
+      - name: Set RDP Password
+        run: |
+          net user runneradmin "${{ secrets.VNC_PASSWORD }}"
+          
+      - name: Keep Alive
+        run: Start-Sleep -Seconds 21600
